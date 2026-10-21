@@ -1,0 +1,12 @@
+{
+  "name": "subscription-graveyard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Your forgotten subscriptions are coming back from the dead.",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.5"
+  }
+}
