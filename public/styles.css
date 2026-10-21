@@ -354,6 +354,12 @@ body:not([data-screen="landing"]) .roll {
   animation: rise 0.7s steps(7) both;
 }
 
+/* Once risen, drop the animation entirely. Chrome can leave a composited clip-path
+   animation stuck on its second-to-last frame, so don't rely on fill-mode for the end state. */
+.zombie.risen {
+  animation: none;
+}
+
 .zombie-top {
   display: flex;
   align-items: center;

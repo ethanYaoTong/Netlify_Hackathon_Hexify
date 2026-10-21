@@ -269,7 +269,15 @@ function renderGraveyard({ subscriptions }) {
     return card;
   });
   $("zombies").replaceChildren(...cards);
+
+  // Safety net: if any card's animationend never fires, settle it anyway.
+  setTimeout(() => cards.forEach((card) => card.classList.add("risen")), cards.length * RISE_STAGGER_MS + 1500);
 }
+
+// Mark cards (and tombstones) as risen when their rise animation ends; see .zombie.risen in CSS.
+$("zombies").addEventListener("animationend", (e) => {
+  if (e.animationName === "rise") e.target.classList.add("risen");
+});
 
 function updateSummary() {
   const total = state.subscriptions.length;
