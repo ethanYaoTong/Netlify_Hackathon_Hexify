@@ -11,28 +11,46 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Screen 1: Landing -->
-  <section id="landing" class="screen">
-    <h1>Subscription Graveyard</h1>
-    <p class="tagline">Your forgotten subscriptions are coming back from the dead.</p>
+  <!-- Night-time scenery (purely decorative) -->
+  <div class="scenery" aria-hidden="true">
+    <div class="stars"></div>
+    <div class="moon"></div>
+    <div class="fence"></div>
+    <div class="fog"><div class="fog-layer"></div><div class="fog-layer fog-layer-2"></div></div>
+  </div>
 
-    <button id="demo-btn" class="btn btn-primary">🧟 Summon demo graveyard</button>
+  <!-- Shown while /api/detect runs -->
+  <div id="summoning" class="summoning" hidden>
+    <p class="summoning-text">🪦 Summoning the dead…</p>
+  </div>
 
-    <div class="upload">
-      <label for="file-input" class="btn btn-secondary">📄 Upload your bank statement (CSV)</label>
-      <input type="file" id="file-input" accept=".csv,text/csv" hidden />
-    </div>
+  <main id="app">
+    <!-- Screen 1: Landing -->
+    <section id="landing" class="screen">
+      <h1>Subscription Graveyard</h1>
+      <p class="tagline">Your forgotten subscriptions are coming back from the dead.</p>
 
-    <p class="small-print">🔒 Your transactions are never stored.</p>
-    <p id="landing-error" class="error" role="alert" hidden></p>
-  </section>
+      <button id="demo-btn" class="btn btn-primary">🧟 Summon demo graveyard</button>
 
-  <!-- Screen 2: The graveyard (results) -->
-  <section id="graveyard" class="screen" hidden>
-    <h2 id="summary"></h2>
-    <ul id="zombie-list" class="zombie-list"></ul>
-    <button id="back-btn" class="btn btn-secondary">← Haunt another statement</button>
-  </section>
+      <div class="upload">
+        <label for="file-input" class="btn btn-secondary">📄 Upload your bank statement (CSV)</label>
+        <input type="file" id="file-input" accept=".csv,text/csv" hidden />
+      </div>
+
+      <p class="small-print">🔒 Your transactions are never stored.</p>
+      <p id="landing-error" class="error" role="alert" hidden></p>
+    </section>
+
+    <!-- Screen 2: The graveyard (results) -->
+    <section id="graveyard" class="screen" hidden>
+      <header class="graveyard-header">
+        <h2 id="summary"></h2>
+        <p id="summary-sub" class="summary-sub"></p>
+      </header>
+      <div id="zombies" class="zombies"></div>
+      <button id="back-btn" class="btn btn-secondary">← Haunt another statement</button>
+    </section>
+  </main>
 
   <script src="app.js"></script>
 </body>
