@@ -705,12 +705,12 @@ $("file-input").addEventListener("change", (e) => {
   if (file) summon(() => file.text());
 });
 
-// Fresh start: clear the gravekeeper's old lines and replay the greeting.
+// Back to the title screen: drop the old lines and just point at the menu (no full intro again).
 const backToStart = () => {
-  narrator.hide();
+  clearTimeout(greetTimer);
   showScreen("landing");
   refreshLandingCounter();
-  greetLater(1200);
+  narrator.say(["* Back for more? Summon the demo graveyard, or upload another bank statement."]);
 };
 $("back-btn").addEventListener("click", backToStart);
 $("again-btn").addEventListener("click", backToStart);
