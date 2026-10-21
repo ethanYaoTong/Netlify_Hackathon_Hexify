@@ -7,48 +7,52 @@
   <meta name="description" content="Upload your bank statement and watch your forgotten subscriptions rise from the grave." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=VT323&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <!-- Night-time scenery (purely decorative) -->
-  <div class="scenery" aria-hidden="true">
-    <div class="stars"></div>
-    <div class="moon"></div>
-    <div class="fence"></div>
-    <div class="fog"><div class="fog-layer"></div><div class="fog-layer fog-layer-2"></div></div>
-  </div>
+<body data-screen="landing">
+  <!-- CRT effects layered over everything (decorative) -->
+  <div class="static" aria-hidden="true"></div>
+  <div class="roll" aria-hidden="true"></div>
+  <div class="crt" aria-hidden="true"></div>
 
   <!-- Shown while /api/detect runs -->
   <div id="summoning" class="summoning" hidden>
-    <p class="summoning-text">🪦 Summoning the dead…</p>
+    <p class="summoning-text">Summoning…</p>
   </div>
 
   <main id="app">
-    <!-- Screen 1: Landing -->
-    <section id="landing" class="screen">
-      <h1>Subscription Graveyard</h1>
-      <p class="tagline">Your forgotten subscriptions are coming back from the dead.</p>
+    <!-- Screen 1: Title screen -->
+    <section id="landing" class="screen title-screen">
+      <svg class="title-face" viewBox="0 0 14 16" aria-hidden="true"><use href="#zombie-sprite" /></svg>
 
-      <button id="demo-btn" class="btn btn-primary">🧟 Summon demo graveyard</button>
+      <div class="title-content">
+        <h1 class="title">
+          <span class="glitch" data-text="Subscription">Subscription</span>
+          <span class="glitch" data-text="Graveyard">Graveyard</span>
+        </h1>
+        <p class="tagline">Your forgotten subscriptions are coming back from the dead.</p>
 
-      <div class="upload">
-        <label for="file-input" class="btn btn-secondary">📄 Upload your bank statement (CSV)</label>
-        <input type="file" id="file-input" accept=".csv,text/csv" hidden />
+        <nav class="menu" aria-label="Start">
+          <button id="demo-btn" class="menu-item">Summon demo graveyard</button>
+          <label for="file-input" id="upload-btn" class="menu-item" tabindex="0" role="button">Upload bank statement (CSV)</label>
+          <input type="file" id="file-input" accept=".csv,text/csv" hidden />
+        </nav>
+
+        <p id="landing-error" class="error" role="alert" hidden></p>
       </div>
 
-      <p class="small-print">🔒 Your transactions are never stored.</p>
-      <p id="landing-error" class="error" role="alert" hidden></p>
+      <p class="small-print">Your transactions are never stored.</p>
     </section>
 
     <!-- Screen 2: The graveyard (results) -->
     <section id="graveyard" class="screen" hidden>
-      <header class="graveyard-header">
+      <header class="hud">
         <h2 id="summary"></h2>
         <p id="summary-sub" class="summary-sub"></p>
       </header>
       <div id="zombies" class="zombies"></div>
-      <button id="back-btn" class="btn btn-secondary">← Haunt another statement</button>
+      <button id="back-btn" class="btn-pixel">Haunt another statement</button>
     </section>
   </main>
 

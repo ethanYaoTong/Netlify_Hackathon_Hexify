@@ -1,11 +1,20 @@
+/* Subscription Graveyard: a 90s horror game on a dying CRT.
+   Hard pixel edges only: no border-radius, no blur, no soft shadows. */
+
 :root {
-  --bg: #0d0716;
-  --purple: #6b2fb3;
-  --green: #7fff6a;
+  --black: #000000;
   --bone: #e8e0d0;
   --blood: #c0262d;
-  --silhouette: #050208;
-  --card: rgba(22, 12, 38, 0.88);
+  --purple: #6b2fb3;
+  --green: #7fff6a;
+  --dim: #6f675c;
+
+  --font-display: "Jersey 10", "VT323", monospace;
+  --font-body: "VT323", monospace;
+  --px: 4px; /* one "screen pixel" for borders and offsets */
+
+  /* Noise texture for TV static */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 * {
@@ -20,197 +29,224 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 80% 0%, rgba(107, 47, 179, 0.45), transparent 55%),
-    linear-gradient(to bottom, #0d0716 0%, #1c0d33 55%, #2a1247 85%, #0d0716 100%);
-  background-attachment: fixed;
+  background: var(--black);
   color: var(--bone);
-  font-family: "Inter", sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  line-height: 1.25;
   overflow-x: hidden;
 }
 
 h1,
-h2 {
-  font-family: "Creepster", cursive;
+h2,
+h3 {
+  font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: 0.03em;
-  color: var(--green);
-  text-shadow: 0 0 18px rgba(127, 255, 106, 0.45);
-}
-
-h1 {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  margin: 0 0 0.5rem;
-}
-
-h2 {
-  font-size: clamp(1.5rem, 4.5vw, 2.4rem);
   margin: 0;
 }
 
-/* ---------------- Scenery ---------------- */
+button {
+  font: inherit;
+  color: inherit;
+}
 
-.scenery > * {
+:focus-visible {
+  outline: 2px dashed var(--bone);
+  outline-offset: 4px;
+}
+
+/* ---------------- CRT layers ---------------- */
+
+.static,
+.roll,
+.crt {
   position: fixed;
+  inset: 0;
   pointer-events: none;
 }
 
-.stars {
-  inset: 0;
-  z-index: 0;
-  background-image:
-    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent),
-    radial-gradient(1px 1px at 25% 8%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 38% 28%, #fff, transparent),
-    radial-gradient(1px 1px at 52% 12%, #fff, transparent),
-    radial-gradient(1px 1px at 63% 32%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 70% 6%, #fff, transparent),
-    radial-gradient(1px 1px at 88% 40%, #fff, transparent),
-    radial-gradient(1px 1px at 6% 45%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 45% 48%, #fff, transparent),
-    radial-gradient(1px 1px at 93% 22%, #fff, transparent);
-  opacity: 0.7;
-  animation: twinkle 4s ease-in-out infinite alternate;
+.static {
+  z-index: 40;
+  background: var(--noise);
+  opacity: 0.05;
+  animation: static-jitter 0.4s steps(4) infinite;
 }
 
-.moon {
-  top: 6vh;
-  right: 8vw;
-  z-index: 0;
-  width: clamp(60px, 10vw, 120px);
-  aspect-ratio: 1;
-  border-radius: 50%;
+body[data-screen="landing"] .static {
+  opacity: 0.11;
+}
+
+/* A brighter band that slowly rolls down the screen, like a badly tuned TV. */
+.roll {
+  z-index: 41;
+  inset: auto 0 auto 0;
+  top: 0;
+  height: 22vh;
+  background: linear-gradient(to bottom, transparent, rgba(232, 224, 208, 0.05) 50%, transparent);
+  animation: roll 8s linear infinite;
+}
+
+body:not([data-screen="landing"]) .roll {
+  display: none;
+}
+
+.crt {
+  z-index: 42;
   background:
-    radial-gradient(circle at 30% 40%, rgba(0, 0, 0, 0.08) 0 8%, transparent 9%),
-    radial-gradient(circle at 62% 62%, rgba(0, 0, 0, 0.07) 0 12%, transparent 13%),
-    radial-gradient(circle at 55% 25%, rgba(0, 0, 0, 0.06) 0 6%, transparent 7%),
-    radial-gradient(circle at 35% 35%, #fffbe8, var(--bone) 60%, #cfc6b0);
-  box-shadow:
-    0 0 40px 10px rgba(232, 224, 208, 0.35),
-    0 0 140px 50px rgba(107, 47, 179, 0.35);
-}
-
-.fence {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  height: 90px;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='90' viewBox='0 0 36 90'%3E%3Cpath d='M0 40h36v5H0zM0 70h36v5H0z' fill='%23050208'/%3E%3Cpath d='M13 90V18l5-12 5 12v72z' fill='%23050208'/%3E%3C/svg%3E") repeat-x bottom,
-    linear-gradient(to top, var(--silhouette) 0 14px, transparent 14px);
-}
-
-.fog {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  height: 40vh;
-  overflow: hidden;
-}
-
-.fog-layer {
-  position: absolute;
-  bottom: -10%;
-  left: 0;
-  width: 200%;
-  height: 100%;
-  background:
-    radial-gradient(ellipse 18% 40% at 10% 80%, rgba(232, 224, 208, 0.13), transparent 70%),
-    radial-gradient(ellipse 22% 35% at 35% 90%, rgba(232, 224, 208, 0.1), transparent 70%),
-    radial-gradient(ellipse 20% 45% at 60% 85%, rgba(232, 224, 208, 0.12), transparent 70%),
-    radial-gradient(ellipse 18% 40% at 85% 80%, rgba(232, 224, 208, 0.1), transparent 70%);
-  filter: blur(6px);
-  animation: drift 45s linear infinite;
-}
-
-.fog-layer-2 {
-  bottom: -20%;
-  opacity: 0.7;
-  animation-duration: 70s;
-  animation-direction: reverse;
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
 }
 
 /* ---------------- Layout ---------------- */
 
 #app {
   position: relative;
-  z-index: 3;
+  z-index: 1;
 }
 
 .screen {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2.5rem 1rem 140px; /* bottom padding keeps content clear of the fence */
-  text-align: center;
+  padding: 2rem 1rem 4rem;
 }
 
-#landing {
+/* ---------------- Title screen ---------------- */
+
+.title-screen {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  padding-left: clamp(1rem, 6vw, 5rem);
+  animation: flicker 7s steps(1) infinite;
+}
+
+.title-face {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  height: min(78vh, 620px);
+  transform: translateY(-50%);
+  shape-rendering: crispEdges;
+  --skin: #5f8f45;
+  --shade: #33552a;
+  --hair: #1a120c;
+  --eye: var(--blood);
+  opacity: 0.5;
+  animation: twitch 6s steps(1) infinite;
+}
+
+.title-content {
+  position: relative;
+  max-width: 34rem;
+}
+
+.title {
+  font-size: clamp(3.5rem, 11vw, 7.5rem);
+  line-height: 0.85;
+  color: var(--bone);
+  margin-bottom: 1rem;
+}
+
+.glitch {
+  position: relative;
+  display: block;
+  width: fit-content;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.glitch::before {
+  color: var(--blood);
+  animation: glitch-a 5s steps(1) infinite;
+}
+
+.glitch::after {
+  color: var(--purple);
+  animation: glitch-b 5s steps(1) infinite;
+}
+
+.glitch + .glitch::before,
+.glitch + .glitch::after {
+  animation-delay: 0.15s;
 }
 
 .tagline {
-  font-size: 1.15rem;
-  margin: 0 0 2rem;
+  margin: 0 0 2.5rem;
+  color: var(--dim);
+  max-width: 28rem;
 }
 
-.btn {
-  display: inline-block;
-  font: inherit;
-  font-weight: 700;
+/* Game-menu entries with a ">>" cursor on the selected item. */
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.menu-item {
+  position: relative;
+  padding: 0 0 0 2.4ch;
+  background: none;
   border: none;
-  border-radius: 999px;
-  padding: 0.9rem 1.8rem;
+  font-family: var(--font-body);
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  color: var(--dim);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: left;
 }
 
-.btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+.menu-item::before {
+  content: ">>";
+  position: absolute;
+  left: 0;
+  visibility: hidden;
 }
 
-.btn:disabled {
-  opacity: 0.6;
+.menu-item:hover,
+.menu-item:focus-visible,
+.menu:not(:hover):not(:focus-within) .menu-item:first-child {
+  color: var(--bone);
+}
+
+.menu-item:hover::before,
+.menu-item:focus-visible::before,
+.menu:not(:hover):not(:focus-within) .menu-item:first-child::before {
+  visibility: visible;
+  animation: blink 1s steps(2) infinite;
+}
+
+.menu-item:focus-visible {
+  outline: none;
+}
+
+.menu-item:disabled {
   cursor: wait;
 }
 
-.btn-primary {
-  font-size: 1.25rem;
-  background: var(--green);
-  color: var(--bg);
-  box-shadow: 0 0 24px rgba(127, 255, 106, 0.45);
-}
-
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 36px rgba(127, 255, 106, 0.7);
-}
-
-.btn-secondary {
-  background: rgba(13, 7, 22, 0.6);
-  color: var(--bone);
-  border: 2px solid var(--purple);
-}
-
-.upload {
-  margin-top: 1rem;
-}
-
 .small-print {
-  margin-top: 1.5rem;
-  font-size: 0.85rem;
-  opacity: 0.75;
+  position: absolute;
+  left: clamp(1rem, 6vw, 5rem);
+  bottom: 1.25rem;
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--dim);
 }
 
 .error {
-  margin-top: 1rem;
-  color: #ff6b6b;
-  font-weight: 600;
+  margin: 1.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--blood);
+  color: var(--bone);
+  max-width: 30rem;
 }
 
 /* ---------------- Summoning overlay ---------------- */
@@ -218,248 +254,312 @@ h2 {
 .summoning {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 30;
   display: grid;
   place-items: center;
-  background: rgba(13, 7, 22, 0.65);
+  background: var(--black) var(--noise);
+  animation: static-jitter 0.2s steps(3) infinite;
 }
 
 .summoning-text {
-  font-family: "Creepster", cursive;
-  font-size: clamp(2rem, 7vw, 3.5rem);
-  color: var(--green);
-  text-shadow: 0 0 24px rgba(127, 255, 106, 0.6);
-  animation: pulse 0.8s ease-in-out infinite alternate;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  color: var(--bone);
+  background: var(--black);
+  padding: 0 1.5rem;
+  animation: vertical-slip 0.5s steps(1) infinite;
 }
 
-body.shaking #app,
-body.shaking .fence,
-body.shaking .summoning-text {
-  animation: shake 0.12s linear infinite;
+/* ---------------- Pixel UI pieces ---------------- */
+
+/* Notched pixel border: four hard shadows instead of a rounded border. */
+.btn-pixel,
+.zombie {
+  --edge: var(--purple);
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 var(--edge),
+    0 var(--px) 0 0 var(--edge),
+    calc(var(--px) * -1) 0 0 0 var(--edge),
+    var(--px) 0 0 0 var(--edge);
+}
+
+.btn-pixel {
+  --edge: var(--bone);
+  display: inline-block;
+  margin: var(--px);
+  padding: 0.4rem 1.2rem;
+  background: var(--black);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  color: var(--bone);
+  cursor: pointer;
+}
+
+.btn-pixel:hover {
+  background: var(--bone);
+  color: var(--black);
 }
 
 /* ---------------- Graveyard ---------------- */
 
-.graveyard-header {
+.hud {
   position: sticky;
   top: 0;
   z-index: 5;
-  margin: 0 -1rem 2rem;
+  margin: 0 -1rem 2.5rem;
   padding: 1rem;
-  background: rgba(13, 7, 22, 0.8);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(107, 47, 179, 0.6);
+  background: var(--black);
+  border-bottom: var(--px) solid var(--purple);
+}
+
+.hud h2 {
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  line-height: 1;
 }
 
 .summary-sub {
-  margin: 0.25rem 0 0;
-  opacity: 0.8;
+  margin: 0.35rem 0 0;
+  color: var(--dim);
 }
 
 .zombies {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem 1.5rem;
+  margin-bottom: 3rem;
 }
 
 .zombie {
-  --tilt: 0deg;
-  --cracks: 0;
-  --glow: 0.15;
+  /* Rot level drives the sprite colours */
+  --skin: #a9bf93;
+  --shade: #7c8d6a;
+  --hair: #3b2a1c;
+  --eye: var(--bone);
   position: relative;
-  padding: 1.25rem 1rem 1.5rem;
-  background: var(--card);
-  border: 2px solid rgba(127, 255, 106, calc(var(--glow) + 0.15));
-  border-radius: 18px 18px 6px 6px;
-  box-shadow: 0 0 28px rgba(127, 255, 106, var(--glow));
-  /* Rise out of the ground: move up while revealing from the top down. */
-  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+  margin: var(--px);
+  padding: 1rem;
+  background: var(--black);
+  /* Rise out of the ground in choppy 8-bit steps: move up while revealing top-down. */
+  animation: rise 0.7s steps(7) both;
 }
 
-/* Cracks overlay, stronger as rot increases */
-.zombie::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: var(--cracks);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%237fff6a' stroke-width='1.2' stroke-opacity='.55'%3E%3Cpath d='M0 30l25 12 10-8 18 20 14-4'/%3E%3Cpath d='M200 60l-22 6-8 16-20 4-6 14'/%3E%3Cpath d='M30 200l8-24 16-6 4-18 14-8'/%3E%3Cpath d='M200 170l-18-6-10 10-16-4'/%3E%3Cpath d='M90 0l6 18-8 12 10 14'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100%;
+.zombie[data-rot="1"] { --skin: #93c46e; --shade: #648c49; --hair: #2e2116; }
+.zombie[data-rot="2"] { --skin: #7fd65a; --shade: #4c8f36; --hair: #22180f; --eye: #ff9b6a; }
+.zombie[data-rot="3"] { --skin: #66b83f; --shade: #36702a; --hair: #140e08; --eye: var(--blood); }
+
+.zombie-top {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
 }
 
-.zombie[data-rot="1"] { --tilt: -4deg; --cracks: 0.35; --glow: 0.25; }
-.zombie[data-rot="2"] { --tilt: 6deg; --cracks: 0.7; --glow: 0.4; }
-.zombie[data-rot="3"] { --tilt: -10deg; --cracks: 1; --glow: 0.55; }
-
-.zombie-figure {
-  display: inline-block;
-  font-size: 4rem;
-  line-height: 1;
-  transform: rotate(var(--tilt));
-  animation: sway 3s ease-in-out infinite alternate;
+.sprite {
+  flex: none;
+  width: 56px;
+  height: 64px;
+  shape-rendering: crispEdges;
+  animation: bob 1.2s steps(2) infinite;
 }
 
-.zombie[data-rot="1"] .zombie-figure { filter: hue-rotate(15deg) saturate(1.3); }
-.zombie[data-rot="2"] .zombie-figure { filter: hue-rotate(35deg) saturate(1.7) brightness(0.9); }
-.zombie[data-rot="3"] .zombie-figure { filter: hue-rotate(55deg) saturate(2.2) brightness(0.8) contrast(1.2); }
+.zombie[data-rot="3"] .sprite {
+  animation-duration: 0.6s;
+}
 
 .zombie-name {
-  margin: 0.5rem 0 0.15rem;
-  font-family: "Creepster", cursive;
-  font-weight: 400;
-  font-size: 1.6rem;
-  letter-spacing: 0.03em;
+  font-size: 2rem;
+  line-height: 0.95;
   color: var(--bone);
+}
+
+.zombie-level {
+  margin: 0.1rem 0 0;
+  font-size: 1.15rem;
+  color: var(--dim);
 }
 
 .zombie-price {
-  margin: 0;
-  opacity: 0.85;
+  margin: 0.9rem 0 0;
 }
 
 .zombie-yearly {
-  margin: 0.6rem 0 0;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--green);
-  line-height: 1.1;
+  margin: 0.6rem 0 0.3rem;
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--blood);
 }
 
 .zombie-yearly span {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--bone);
-  opacity: 0.75;
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  color: var(--dim);
+}
+
+/* HP bar: yearly cost relative to the most expensive zombie, drawn as blocks. */
+.hp {
+  height: 14px;
+  padding: 2px;
+  border: 2px solid var(--dim);
+}
+
+.hp-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--blood) 0 8px, transparent 8px 10px);
 }
 
 .zombie-since {
-  margin: 0.75rem 0 0;
-  font-size: 0.85rem;
-  font-style: italic;
-  opacity: 0.75;
+  margin: 0.7rem 0 0;
+  font-size: 1.15rem;
+  color: var(--dim);
 }
 
-.badges {
+.statuses {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-  min-height: 1.6rem;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
 }
 
-.badge {
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+.status {
+  padding: 0 0.5rem;
+  font-size: 1.15rem;
 }
 
-.badge-mutated {
+.status-mutated {
   background: var(--blood);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(192, 38, 45, 0.7);
-}
-
-.badge-dormant {
-  background: rgba(232, 224, 208, 0.15);
   color: var(--bone);
+  animation: blink 1.6s steps(2) infinite;
 }
 
-.badge-rot {
-  background: rgba(127, 255, 106, 0.12);
-  color: var(--green);
+.status-asleep {
+  background: var(--dim);
+  color: var(--black);
 }
 
 .zombie.dormant {
-  border-style: dashed;
-  border-color: rgba(232, 224, 208, 0.25);
-  box-shadow: none;
+  --edge: var(--dim);
 }
 
 .zombie.dormant > * {
   opacity: 0.55;
-  filter: grayscale(0.85);
 }
 
-.zombie.dormant .zombie-figure {
+.zombie.dormant .sprite {
+  filter: grayscale(1);
   animation: none;
 }
 
-/* ---------------- Animations ---------------- */
+.zombie.dormant .hp-fill {
+  background: repeating-linear-gradient(90deg, var(--dim) 0 8px, transparent 8px 10px);
+}
+
+/* ---------------- Animations (all stepped, no easing: it's 8-bit) ---------------- */
 
 @keyframes rise {
   from {
     transform: translateY(100%);
-    clip-path: inset(-40px -40px 100% -40px);
-  }
-  70% {
-    transform: translateY(-4%);
-    clip-path: inset(-40px);
+    clip-path: inset(-8px -8px 100% -8px);
   }
   to {
     transform: translateY(0);
-    clip-path: inset(-40px);
+    clip-path: inset(-8px);
   }
 }
 
-@keyframes sway {
-  from { transform: rotate(calc(var(--tilt) - 4deg)); }
-  to { transform: rotate(calc(var(--tilt) + 4deg)); }
+@keyframes bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
 }
 
-@keyframes shake {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-3px, 2px); }
-  50% { transform: translate(3px, -1px); }
-  75% { transform: translate(-2px, -2px); }
-  100% { transform: translate(0, 0); }
+@keyframes blink {
+  from { opacity: 1; }
+  to { opacity: 0.25; }
 }
 
-@keyframes drift {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+@keyframes static-jitter {
+  0% { background-position: 0 0; }
+  25% { background-position: -40px 20px; }
+  50% { background-position: 30px -50px; }
+  75% { background-position: -70px -10px; }
+  100% { background-position: 10px 60px; }
 }
 
-@keyframes twinkle {
-  from { opacity: 0.45; }
-  to { opacity: 0.85; }
+@keyframes roll {
+  from { transform: translateY(-25vh); }
+  to { transform: translateY(110vh); }
 }
 
-@keyframes pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
+/* Whole title screen browns out for a frame or two now and then. */
+@keyframes flicker {
+  0% { opacity: 1; }
+  94% { opacity: 0.55; }
+  94.6% { opacity: 1; }
+  97% { opacity: 0.8; }
+  97.4% { opacity: 1; }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Title slices jump sideways in red and purple, then snap back. */
+@keyframes glitch-a {
+  0% { opacity: 0; transform: none; clip-path: none; }
+  88% { opacity: 0.9; transform: translateX(-7px); clip-path: inset(12% 0 55% 0); }
+  90% { opacity: 0.9; transform: translateX(6px); clip-path: inset(62% 0 8% 0); }
+  92% { opacity: 0; }
+  96% { opacity: 0.9; transform: translateX(-4px); clip-path: inset(38% 0 40% 0); }
+  97% { opacity: 0; }
+}
+
+@keyframes glitch-b {
+  0% { opacity: 0; transform: none; clip-path: none; }
+  88% { opacity: 0.9; transform: translateX(6px); clip-path: inset(55% 0 20% 0); }
+  90% { opacity: 0.9; transform: translateX(-5px); clip-path: inset(5% 0 70% 0); }
+  92% { opacity: 0; }
+}
+
+/* The face in the dark: still, then a jolt, then it's gone for a moment. */
+@keyframes twitch {
+  0% { opacity: 0.5; transform: translateY(-50%); }
+  62% { opacity: 0.85; transform: translate(-10px, calc(-50% + 6px)); }
+  63% { opacity: 0.5; transform: translateY(-50%); }
+  81% { opacity: 0.08; }
+  84% { opacity: 0.5; }
+  85% { opacity: 0.9; transform: translate(6px, -50%) scale(1.03); }
+  86% { opacity: 0.5; transform: translateY(-50%); }
+}
+
+@keyframes vertical-slip {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-14px); }
+  45% { transform: translateY(6px); }
+  50% { transform: translateY(0); }
 }
 
 /* Calm everything down for people who prefer less motion. */
 @media (prefers-reduced-motion: reduce) {
-  .stars,
-  .fog-layer,
-  .zombie-figure,
-  .summoning-text,
-  body.shaking #app,
-  body.shaking .fence,
-  body.shaking .summoning-text {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
   }
-  .zombie {
-    animation: fade-in 0.3s ease both;
+  .roll {
+    display: none;
+  }
+}
+
+/* ---------------- Small screens ---------------- */
+
+@media (max-width: 700px) {
+  .title-face {
+    right: 50%;
+    height: 60vh;
+    opacity: 0.18;
+    transform: translate(50%, -50%);
+    animation: none;
   }
 }
 
 @media (max-width: 520px) {
   .zombies {
     grid-template-columns: 1fr;
-  }
-  .btn-primary {
-    font-size: 1.1rem;
   }
 }

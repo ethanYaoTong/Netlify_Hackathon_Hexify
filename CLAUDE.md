@@ -31,7 +31,7 @@ Build plan for the AI agent. Read this whole file before writing code. Follow th
 - **Frontend:** plain HTML + CSS + vanilla JS in `public/`. **No framework and no build step.**
 - **Backend:** Netlify Functions (modern syntax, `.mjs`) in `netlify/functions/`.
 - **Storage:** Netlify Blobs (`@netlify/blobs`), used only for the global "total slain" counter.
-- **Fonts:** Google Fonts, `Creepster` for headings and `Inter` for body text.
+- **Fonts:** Google Fonts, `Jersey 10` for headings and `VT323` for body text (8-bit / retro game look).
 - **Do not add:** auth/login, a database, bank API integrations, React/Vite, TypeScript, or tests. There's no time.
 
 ### File structure
@@ -178,9 +178,9 @@ An array of `{ id, name, aliases: [...], category, cancelUrl }`. Include at leas
 ## 5. Frontend spec
 
 ### Look & feel
-- A night graveyard: deep purple/black gradient sky, glowing moon, drifting CSS fog layer along the bottom, silhouette of a fence.
-- Palette: background `#0d0716`, purple `#6b2fb3`, zombie green `#7fff6a`, bone `#e8e0d0`, blood red `#c0262d`.
-- `Creepster` for headings, `Inter` for everything else (it must stay readable).
+- **An 8-bit horror game on a dying CRT TV** (FNAF-style title screen): TV static, scanlines, a rolling bar, flicker, a glitching title and a twitching pixel zombie face. Hard pixel edges only: no border-radius, no blur or soft shadows, stepped (`steps()`) animations. Panels use notched pixel borders (`.btn-pixel` / `.zombie` box-shadow pattern).
+- Palette: black `#000000`, bone `#e8e0d0` (text), blood red `#c0262d` (money drained), purple `#6b2fb3` (panel borders, glitch), zombie green `#7fff6a` (only sprites and money saved), dim `#6f675c` (secondary text).
+- `Jersey 10` for headings, `VT323` for everything else, set large so it stays readable. No emojis in UI text (they clash with the pixel fonts); use the pixel zombie sprite instead.
 - Must work on a laptop screen and on a phone (single column on mobile).
 - Respect `prefers-reduced-motion` (tone the animations down).
 
