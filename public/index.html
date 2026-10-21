@@ -4,32 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subscription Graveyard</title>
+  <meta name="description" content="Upload your bank statement and watch your forgotten subscriptions rise from the grave." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      background: #0d0716;
-      color: #e8e0d0;
-      font-family: "Inter", sans-serif;
-    }
-    h1 {
-      font-family: "Creepster", cursive;
-      font-size: clamp(2.5rem, 8vw, 5rem);
-      color: #7fff6a;
-      margin: 0 0 0.5rem;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main>
+  <!-- Screen 1: Landing -->
+  <section id="landing" class="screen">
     <h1>Subscription Graveyard</h1>
-    <p>Your forgotten subscriptions are coming back from the dead.</p>
-  </main>
+    <p class="tagline">Your forgotten subscriptions are coming back from the dead.</p>
+
+    <button id="demo-btn" class="btn btn-primary">🧟 Summon demo graveyard</button>
+
+    <div class="upload">
+      <label for="file-input" class="btn btn-secondary">📄 Upload your bank statement (CSV)</label>
+      <input type="file" id="file-input" accept=".csv,text/csv" hidden />
+    </div>
+
+    <p class="small-print">🔒 Your transactions are never stored.</p>
+    <p id="landing-error" class="error" role="alert" hidden></p>
+  </section>
+
+  <!-- Screen 2: The graveyard (results) -->
+  <section id="graveyard" class="screen" hidden>
+    <h2 id="summary"></h2>
+    <ul id="zombie-list" class="zombie-list"></ul>
+    <button id="back-btn" class="btn btn-secondary">← Haunt another statement</button>
+  </section>
+
+  <script src="app.js"></script>
 </body>
 </html>
