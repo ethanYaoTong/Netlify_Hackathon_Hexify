@@ -42,19 +42,59 @@
         <p id="landing-error" class="error" role="alert" hidden></p>
       </div>
 
-      <p class="small-print">Your transactions are never stored.</p>
+      <footer class="title-footer">
+        <p>Your transactions are never stored.</p>
+        <p id="landing-global" class="global-counter" hidden></p>
+      </footer>
     </section>
 
     <!-- Screen 2: The graveyard (results) -->
     <section id="graveyard" class="screen" hidden>
       <header class="hud">
-        <h2 id="summary"></h2>
-        <p id="summary-sub" class="summary-sub"></p>
+        <div class="hud-main">
+          <h2 id="summary"></h2>
+          <p id="summary-sub" class="summary-sub"></p>
+        </div>
+        <div class="hud-saved">
+          <p id="saved" class="saved" aria-live="polite">Saved $0.00 a year</p>
+          <p id="equivalents" class="equivalents"></p>
+          <button id="leave-btn" class="btn-pixel btn-small">Leave the graveyard</button>
+        </div>
       </header>
       <div id="zombies" class="zombies"></div>
       <button id="back-btn" class="btn-pixel">Haunt another statement</button>
     </section>
+
+    <!-- Screen 3: Graveyard cleared (the treat) -->
+    <section id="cleared" class="screen cleared-screen" hidden>
+      <h2 id="cleared-title" class="cleared-title"></h2>
+      <p id="cleared-saved" class="cleared-saved"></p>
+      <p id="cleared-count" class="cleared-count"></p>
+      <ul id="cleared-equivalents" class="cleared-equivalents"></ul>
+      <p id="cleared-global" class="global-counter"></p>
+      <button id="again-btn" class="btn-pixel">Haunt another statement</button>
+    </section>
   </main>
+
+  <!-- Slay dialog, styled like an RPG text box -->
+  <dialog id="slay-dialog" class="dialog" aria-labelledby="slay-title">
+    <form method="dialog">
+      <div class="dialog-body">
+        <div id="slay-portrait" class="portrait"></div>
+        <div>
+          <h3 id="slay-title" class="dialog-title"></h3>
+          <p id="slay-text" class="dialog-text"></p>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <a id="slay-link" class="btn-pixel" target="_blank" rel="noopener noreferrer">Open cancel page ↗</a>
+        <button value="slay" class="btn-pixel btn-slay">I've cancelled it. Slay!</button>
+        <button value="close" class="btn-text">Not yet</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="bats" class="bats" aria-hidden="true"></div>
 
   <script src="app.js"></script>
 </body>

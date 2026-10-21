@@ -330,23 +330,29 @@ body:not([data-screen="landing"]) .roll {
   margin-bottom: 3rem;
 }
 
-.zombie {
-  /* Rot level drives the sprite colours */
+/* Rot level drives the sprite colours (cards and the dialog portrait). */
+.zombie,
+.portrait {
   --skin: #a9bf93;
   --shade: #7c8d6a;
   --hair: #3b2a1c;
   --eye: var(--bone);
+}
+
+[data-rot="1"] { --skin: #93c46e; --shade: #648c49; --hair: #2e2116; }
+[data-rot="2"] { --skin: #7fd65a; --shade: #4c8f36; --hair: #22180f; --eye: #ff9b6a; }
+[data-rot="3"] { --skin: #66b83f; --shade: #36702a; --hair: #140e08; --eye: var(--blood); }
+
+.zombie {
   position: relative;
+  display: flex;
+  flex-direction: column;
   margin: var(--px);
   padding: 1rem;
   background: var(--black);
   /* Rise out of the ground in choppy 8-bit steps: move up while revealing top-down. */
   animation: rise 0.7s steps(7) both;
 }
-
-.zombie[data-rot="1"] { --skin: #93c46e; --shade: #648c49; --hair: #2e2116; }
-.zombie[data-rot="2"] { --skin: #7fd65a; --shade: #4c8f36; --hair: #22180f; --eye: #ff9b6a; }
-.zombie[data-rot="3"] { --skin: #66b83f; --shade: #36702a; --hair: #140e08; --eye: var(--blood); }
 
 .zombie-top {
   display: flex;
@@ -454,7 +460,271 @@ body:not([data-screen="landing"]) .roll {
   background: repeating-linear-gradient(90deg, var(--dim) 0 8px, transparent 8px 10px);
 }
 
+/* ---------------- Slay button, tombstones, savings ---------------- */
+
+.btn-slay {
+  --edge: var(--blood);
+  color: var(--bone);
+}
+
+/* Pins the Slay button to the bottom so buttons line up across a row of cards. */
+.card-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.btn-slay:hover {
+  background: var(--blood);
+  color: var(--bone);
+}
+
+.btn-small {
+  font-size: 1.2rem;
+  padding: 0.15rem 0.8rem;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.btn-text:hover {
+  color: var(--bone);
+}
+
+/* Hit flash three times, then sink back into the ground in hard steps. */
+.zombie.slaying {
+  animation: slay 0.9s steps(1) forwards;
+}
+
+.tomb {
+  --edge: var(--dim);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.tomb-sprite {
+  width: 72px;
+  height: 78px;
+  shape-rendering: crispEdges;
+}
+
+.tomb .zombie-name {
+  margin-top: 0.6rem;
+}
+
+.tomb-years {
+  margin: 0.2rem 0 0;
+  color: var(--dim);
+}
+
+.tomb-saved {
+  margin: 0.6rem 0 0;
+  color: var(--green);
+}
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem 2rem;
+}
+
+.hud-main {
+  flex: 1 1 24rem;
+}
+
+/* Stays on the right, even when it wraps below the headline. */
+.hud-saved {
+  flex: 0 1 20rem;
+  margin-left: auto;
+  text-align: right;
+}
+
+.saved {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
+  line-height: 1;
+  color: var(--green);
+}
+
+.equivalents {
+  margin: 0.2rem 0 0.5rem;
+  min-height: 1.25em;
+  color: var(--dim);
+}
+
+/* ---------------- Dialog (RPG text box) ---------------- */
+
+.dialog {
+  width: min(36rem, calc(100vw - 2rem));
+  padding: 1.25rem;
+  background: var(--black);
+  color: var(--bone);
+  border: var(--px) solid var(--bone);
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.dialog-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.portrait .sprite {
+  width: 84px;
+  height: 96px;
+}
+
+.dialog-title {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.dialog-text {
+  margin: 0.5rem 0 0;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.dialog-actions .btn-pixel {
+  text-decoration: none;
+}
+
+/* ---------------- Title footer + global counter ---------------- */
+
+.title-footer {
+  position: absolute;
+  left: clamp(1rem, 6vw, 5rem);
+  right: 1rem;
+  bottom: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 2rem;
+  font-size: 1.15rem;
+  color: var(--dim);
+}
+
+.title-footer p {
+  margin: 0;
+}
+
+.global-counter {
+  color: var(--bone);
+}
+
+/* ---------------- Cleared screen ---------------- */
+
+.cleared-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cleared-title {
+  font-size: clamp(3.2rem, 11vw, 7rem);
+  line-height: 0.9;
+  color: var(--bone);
+}
+
+.cleared-saved {
+  margin: 1.5rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 1;
+  color: var(--green);
+}
+
+.cleared-count {
+  margin: 0.5rem 0 0;
+  font-size: 1.6rem;
+}
+
+.cleared-equivalents {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0;
+  color: var(--dim);
+}
+
+.cleared-screen .global-counter {
+  margin: 0 0 2rem;
+  max-width: 30rem;
+}
+
+/* Bats flapping across the cleared screen */
+.bats {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bat {
+  position: absolute;
+  left: 0;
+  width: 44px;
+  height: 20px;
+  shape-rendering: crispEdges;
+  animation: fly var(--duration, 5s) linear var(--delay, 0s) infinite both;
+}
+
+.bat use {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flap 0.3s steps(1) infinite;
+}
+
 /* ---------------- Animations (all stepped, no easing: it's 8-bit) ---------------- */
+
+@keyframes slay {
+  0% { filter: invert(1); }
+  12% { filter: none; }
+  24% { filter: invert(1); }
+  36% { filter: none; }
+  48% { filter: invert(1); }
+  52% { filter: none; transform: translateY(0); clip-path: inset(-8px); }
+  62% { transform: translateY(20%); clip-path: inset(-8px -8px 20% -8px); }
+  72% { transform: translateY(45%); clip-path: inset(-8px -8px 45% -8px); }
+  82% { transform: translateY(70%); clip-path: inset(-8px -8px 70% -8px); }
+  92%,
+  100% { transform: translateY(100%); clip-path: inset(-8px -8px 100% -8px); }
+}
+
+@keyframes fly {
+  from { transform: translate(-60px, var(--top)); }
+  50% { transform: translate(50vw, calc(var(--top) + 40px)); }
+  to { transform: translate(calc(100vw + 60px), var(--top)); }
+}
+
+@keyframes flap {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(-0.6); }
+}
 
 @keyframes rise {
   from {
@@ -561,5 +831,11 @@ body:not([data-screen="landing"]) .roll {
 @media (max-width: 520px) {
   .zombies {
     grid-template-columns: 1fr;
+  }
+  .hud-saved {
+    text-align: left;
+  }
+  .dialog-body {
+    flex-direction: column;
   }
 }
