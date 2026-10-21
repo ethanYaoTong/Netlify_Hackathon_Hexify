@@ -507,6 +507,8 @@ const narrator = {
   hide() {
     clearTimeout(this.timer);
     this.queue = [];
+    this.line = "";
+    $("narrator-typed").textContent = ""; // don't flash old text next time it opens
     $("narrator").hidden = true;
     document.body.classList.remove("narrating");
   },
@@ -667,12 +669,19 @@ addEventListener("keydown", (e) => {
 // Keep the page padded by the box's real height so it never hides content.
 new ResizeObserver(() => document.body.style.setProperty("--narrator-h", `${$("narrator").offsetHeight}px`)).observe($("narrator"));
 
+// The gravekeeper's title-screen greeting, played on first visit and after every reset.
+let greetTimer = null;
+function greetLater(ms) {
+  clearTimeout(greetTimer);
+  greetTimer = setTimeout(() => {
+    if (document.body.dataset.screen === "landing" && $("narrator").hidden && !document.body.classList.contains("is-summoning")) {
+      narrator.say(["* Psst. Down here.", ...HELP_LINES.landing.slice(0, 2), "* Pick Summon demo graveyard to begin."]);
+    }
+  }, ms);
+}
+
 // Greet new visitors once the title screen has had its moment.
-setTimeout(() => {
-  if (document.body.dataset.screen === "landing" && $("narrator").hidden && !document.body.classList.contains("is-summoning")) {
-    narrator.say(["* Psst. Down here.", ...HELP_LINES.landing.slice(0, 2), "* Pick Summon demo graveyard to begin."]);
-  }
-}, 2500);
+greetLater(2500);
 
 $("demo-btn").addEventListener("click", () =>
   summon(async () => {
@@ -696,9 +705,12 @@ $("file-input").addEventListener("change", (e) => {
   if (file) summon(() => file.text());
 });
 
+// Fresh start: clear the gravekeeper's old lines and replay the greeting.
 const backToStart = () => {
+  narrator.hide();
   showScreen("landing");
   refreshLandingCounter();
+  greetLater(1200);
 };
 $("back-btn").addEventListener("click", backToStart);
 $("again-btn").addEventListener("click", backToStart);
