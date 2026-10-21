@@ -96,6 +96,21 @@
 
   <div id="bats" class="bats" aria-hidden="true"></div>
 
+  <!-- Gravekeeper narrator: Undertale-style text box with scripted lines -->
+  <aside id="narrator" class="narrator" aria-label="Gravekeeper" hidden>
+    <div id="narrator-portrait" class="narrator-portrait"></div>
+    <button id="narrator-advance" class="narrator-advance" aria-label="Next line (or press Z)">
+      <span id="narrator-typed" aria-hidden="true"></span>
+      <span class="narrator-next" aria-hidden="true"></span>
+    </button>
+    <div class="narrator-controls">
+      <button id="narrator-close" aria-label="Close the gravekeeper">✕</button>
+      <button id="narrator-sound" aria-pressed="true">Sound</button>
+    </div>
+    <p id="narrator-live" class="visually-hidden" aria-live="polite"></p>
+  </aside>
+  <button id="gravekeeper-btn" class="gravekeeper-btn" aria-label="Ask the gravekeeper for help"></button>
+
   <script src="app.js"></script>
 </body>
 </html>

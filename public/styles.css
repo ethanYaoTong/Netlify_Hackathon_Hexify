@@ -699,6 +699,148 @@ body:not([data-screen="landing"]) .roll {
   animation: flap 0.3s steps(1) infinite;
 }
 
+/* ---------------- Gravekeeper narrator (Undertale-style text box) ---------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.narrator {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  z-index: 35;
+  transform: translateX(-50%);
+  width: min(46rem, calc(100vw - 2rem));
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  background: var(--black);
+  border: var(--px) solid var(--bone);
+}
+
+.narrator-portrait .sprite {
+  display: block;
+  width: 70px;
+  height: 80px;
+}
+
+.narrator-advance {
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* text starts top-left like an RPG box, not centred */
+  flex: 1;
+  min-height: 4.2em;
+  padding: 0 1rem 0 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  line-height: 1.3;
+  color: var(--bone);
+  cursor: pointer;
+}
+
+.narrator-advance:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Blinking square when the line has finished typing */
+.narrator-next {
+  position: absolute;
+  right: 0;
+  bottom: 0.3em;
+  width: 10px;
+  height: 10px;
+  background: var(--bone);
+  visibility: hidden;
+}
+
+.narrator.done .narrator-next {
+  visibility: visible;
+  animation: blink 0.6s steps(2) infinite;
+}
+
+.narrator-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.narrator-controls button {
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.narrator-controls button:hover {
+  color: var(--bone);
+}
+
+#narrator-sound[aria-pressed="false"] {
+  text-decoration: line-through;
+}
+
+.gravekeeper-btn {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 35;
+  padding: 6px;
+  background: var(--black);
+  border: var(--px) solid var(--bone);
+  cursor: pointer;
+}
+
+.gravekeeper-btn .sprite {
+  display: block;
+  width: 42px;
+  height: 48px;
+}
+
+.gravekeeper-btn::after {
+  content: "?";
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  padding: 0 6px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1.2;
+  background: var(--bone);
+  color: var(--black);
+}
+
+body.narrating .gravekeeper-btn,
+body.is-summoning .gravekeeper-btn {
+  display: none;
+}
+
+/* Keep content and the title footer clear of the text box while it's open. */
+body.narrating .screen {
+  padding-bottom: calc(var(--narrator-h, 0px) + 3rem);
+}
+
+body.narrating .title-footer {
+  bottom: calc(var(--narrator-h, 0px) + 2rem);
+}
+
+.title-footer {
+  right: 6rem; /* room for the gravekeeper button */
+}
+
 /* ---------------- Animations (all stepped, no easing: it's 8-bit) ---------------- */
 
 @keyframes slay {
@@ -834,6 +976,17 @@ body:not([data-screen="landing"]) .roll {
   }
   .hud-saved {
     text-align: left;
+  }
+  .narrator {
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+  .narrator-portrait .sprite {
+    width: 44px;
+    height: 50px;
+  }
+  .narrator-advance {
+    font-size: 1.35rem;
   }
   .dialog-body {
     flex-direction: column;

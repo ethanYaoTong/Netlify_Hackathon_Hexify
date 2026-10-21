@@ -53,6 +53,25 @@ const TOMB_PIXELS = [
   "MMMMMMMMMMMM",
   "MDMMDMMMDMMD",
 ];
+// 14×16 hooded gravekeeper (the narrator): P hood, W bone, K black, E glowing eye
+const GRAVEKEEPER_PIXELS = [
+  "....PPPPPP....",
+  "..PPPPPPPPPP..",
+  ".PPPPWWWWPPPP.",
+  ".PPPWWWWWWPPP.",
+  "PPPWWWWWWWWPPP",
+  "PPWKKKWWKKKWPP",
+  "PPWKEKWWKEKWPP",
+  "PPWKKKWWKKKWPP",
+  "PPWWWWKKWWWWPP",
+  "PPPWWWWWWWWPPP",
+  "PPPWKWKWKWKPPP",
+  "PPPPWWWWWWPPPP",
+  "PPPPPWWWWPPPPP",
+  ".PPPPPPPPPPPP.",
+  "PPPPPPPPPPPPPP",
+  "PPPPPPPPPPPPPP",
+];
 // 11×5 bat: B body, E eye
 const BAT_PIXELS = [
   "BB.......BB",
@@ -111,6 +130,7 @@ function buildSprites() {
     ${pixelSymbol("zombie-sprite", ZOMBIE_PIXELS, { H: "var(--hair)", S: "var(--skin)", D: "var(--shade)", K: "#000", E: "var(--eye)", T: "#e8e0d0", B: "#c0262d" })}
     ${pixelSymbol("tomb-sprite", TOMB_PIXELS, { G: "#4a4540", L: "#8f877b", K: "#4a4540", M: "#3c7a2a", D: "#3b2a1c" })}
     ${pixelSymbol("bat-sprite", BAT_PIXELS, { B: "#6b2fb3", E: "#c0262d" })}
+    ${pixelSymbol("gravekeeper-sprite", GRAVEKEEPER_PIXELS, { P: "#6b2fb3", W: "#e8e0d0", K: "#000", E: "#7fff6a" })}
   </svg>`;
   document.body.prepend(defs);
 }
@@ -148,6 +168,8 @@ function setSummoning(on) {
   $("demo-btn").disabled = on;
   $("file-input").disabled = on;
   $("summoning").hidden = !on;
+  document.body.classList.toggle("is-summoning", on);
+  if (on) narrator.hide();
 }
 
 /** Sends CSV text to the detection engine and returns its JSON. */
@@ -212,6 +234,7 @@ async function summon(getCsvText) {
     const [result] = await Promise.all([detect(csvText), delay(SUMMON_MS)]);
     renderGraveyard(result);
     showScreen("graveyard");
+    narrator.say(graveyardLines(result.subscriptions));
   } catch (err) {
     showError(err.message || SPOOKY_ERROR);
   } finally {
@@ -366,6 +389,7 @@ async function slay(s) {
   state.savedYearly += s.yearlyCost;
   countUp(from, state.savedYearly);
   updateSummary();
+  narrator.say(slayLines(s));
 
   const card = $("zombies").querySelector(`[data-id="${CSS.escape(s.id)}"]`);
   if (card) {
@@ -418,6 +442,7 @@ async function showCleared() {
   $("cleared-global").textContent = "";
   showScreen("cleared");
   if (count) launchBats();
+  narrator.say(clearedLines(cleared));
 
   // Wait for this player's slays to land, then show the updated global total.
   await Promise.allSettled(state.pendingPosts);
@@ -437,11 +462,209 @@ function launchBats() {
 }
 
 // ---------------------------------------------------------------------------
+// Gravekeeper narrator: scripted Undertale-style lines that react to the game
+// ---------------------------------------------------------------------------
+
+const TYPE_MS = 28; // per character
+const PAUSE_MS = 160; // extra pause after punctuation
+
+const narrator = {
+  queue: [],
+  line: "",
+  shown: 0,
+  timer: null,
+  muted: false,
+  audio: null,
+
+  /** Replaces whatever is being said with these lines. */
+  say(lines) {
+    if (!lines.length) return;
+    this.queue = [...lines];
+    this.show();
+    this.typeNext();
+  },
+
+  /** Click / Z: finish the current line, then move to the next, then close. */
+  advance() {
+    if (this.shown < this.line.length) return this.finishLine();
+    if (this.queue.length) return this.typeNext();
+    this.hide();
+  },
+
+  show() {
+    $("narrator").hidden = false;
+    document.body.classList.add("narrating");
+  },
+
+  hide() {
+    clearTimeout(this.timer);
+    this.queue = [];
+    $("narrator").hidden = true;
+    document.body.classList.remove("narrating");
+  },
+
+  typeNext() {
+    clearTimeout(this.timer);
+    this.line = this.queue.shift();
+    this.shown = 0;
+    $("narrator").classList.remove("done");
+    $("narrator-live").textContent = this.line; // screen readers get the whole line at once
+    if (REDUCED_MOTION) return this.finishLine();
+    this.tick();
+  },
+
+  tick() {
+    this.shown++;
+    $("narrator-typed").textContent = this.line.slice(0, this.shown);
+    const ch = this.line[this.shown - 1];
+    if (ch !== " " && this.shown % 2) this.blip();
+    if (this.shown >= this.line.length) return $("narrator").classList.add("done");
+    this.timer = setTimeout(() => this.tick(), TYPE_MS + (/[.,!?]/.test(ch) ? PAUSE_MS : 0));
+  },
+
+  finishLine() {
+    clearTimeout(this.timer);
+    this.shown = this.line.length;
+    $("narrator-typed").textContent = this.line;
+    $("narrator").classList.add("done");
+  },
+
+  /** Tiny square-wave "voice" blip. Browsers only allow audio after the first click or key press. */
+  blip() {
+    if (this.muted || !this.audio || this.audio.state !== "running") return;
+    const osc = this.audio.createOscillator();
+    const gain = this.audio.createGain();
+    osc.type = "square";
+    osc.frequency.value = 180 + Math.random() * 40;
+    gain.gain.value = 0.035;
+    osc.connect(gain).connect(this.audio.destination);
+    osc.start();
+    osc.stop(this.audio.currentTime + 0.035);
+  },
+
+  unlockAudio() {
+    try {
+      this.audio ??= new AudioContext();
+      if (this.audio.state === "suspended") this.audio.resume();
+    } catch {
+      this.audio = null; // no Web Audio: stay silent
+    }
+  },
+};
+
+function graveyardLines(subscriptions) {
+  const active = subscriptions.filter((s) => s.status === "active");
+  if (!subscriptions.length) {
+    return ["* ...Nothing rose from the ground.", "* Either you're careful, or this statement is too short. Try a few months of history."];
+  }
+  const lines = [
+    `* ${plural(active.length, "zombie")} crawled out of your statement.`,
+    `* Together they drain ${money(active.reduce((sum, s) => sum + s.yearlyCost, 0))} a year.`,
+  ];
+  if (active[0]) lines.push(`* ${active[0].name} is the strongest. It eats ${money(active[0].yearlyCost)} a year.`);
+  const mutated = subscriptions.find((s) => s.priceHike);
+  if (mutated) {
+    lines.push(`* ${mutated.name} has mutated. It now costs ${money(mutated.priceHike.to - mutated.priceHike.from)} more each ${FREQUENCY_UNIT[mutated.frequency] ?? "time"}.`);
+  }
+  const asleep = subscriptions.find((s) => s.status === "dormant");
+  if (asleep) lines.push(`* ${asleep.name} is asleep. It stopped charging you in ${monthYear(asleep.lastCharged)}. Let it rest.`);
+  const stranger = subscriptions.find((s) => !s.known && s.status === "active");
+  if (stranger) lines.push(`* I don't recognise ${stranger.name}. Find out what it is before it bites.`);
+  lines.push("* Cancel one on its website, then press Slay. I'll keep count.");
+  return lines;
+}
+
+function slayLines(s) {
+  const remaining = remainingSubs();
+  const flavour = [
+    `* ${s.name} crumbles into dust. +${money(s.yearlyCost)} a year.`,
+    `* ${s.name} won't feed on you anymore.`,
+    "* You feel your wallet getting heavier.",
+    `* ${s.name} returns to the earth. ${money(state.savedYearly)} saved so far.`,
+  ];
+  const lines = [flavour[(state.slain.size - 1) % flavour.length]];
+  if (remaining.length === 1) lines.push(`* One left. ${remaining[0].name} looks nervous.`);
+  if (remaining.length === 0) lines.push("* That was the last one...");
+  return lines;
+}
+
+function clearedLines(cleared) {
+  if (cleared) {
+    return [
+      "* The graveyard falls silent.",
+      `* You saved ${money(state.savedYearly)} a year. That's ${equivalentPhrases(state.savedYearly)[0]}.`,
+      "* Knowing your money is finally safe fills you with DETERMINATION.",
+    ];
+  }
+  if (state.slain.size) {
+    return [
+      `* You escaped with ${money(state.savedYearly)} a year saved.`,
+      `* ${plural(remainingSubs().length, "zombie")} still roam${remainingSubs().length === 1 ? "s" : ""} the graveyard. Come back for them.`,
+    ];
+  }
+  return ["* You ran away.", "* The zombies are still feeding. They'll be here when you're ready."];
+}
+
+const HELP_LINES = {
+  landing: [
+    "* I'm the gravekeeper. Your bank statement is full of the undead.",
+    "* Give me a CSV from your bank and I'll dig up every subscription hiding in it.",
+    "* I read it, find the zombies, and forget the rest. Nothing is stored.",
+    "* Or summon the demo graveyard to see how it works.",
+  ],
+  graveyard: [
+    "* Each zombie is a subscription that keeps charging you.",
+    "* The red bar shows its yearly cost compared to your worst zombie.",
+    "* Lv shows how long it's been feeding on you. Older means more rotten.",
+    "* Mutated means the price went up. Asleep means it stopped charging you.",
+    "* Cancel one on its website, then press Slay.",
+  ],
+  cleared: ["* Haunt another statement to go again.", "* Every zombie you slay adds to the global count."],
+};
+
+// ---------------------------------------------------------------------------
 // Event wiring
 // ---------------------------------------------------------------------------
 
 buildSprites();
 refreshLandingCounter();
+
+$("narrator-portrait").append(sprite("gravekeeper-sprite", "sprite"));
+$("gravekeeper-btn").append(sprite("gravekeeper-sprite", "sprite"));
+$("narrator-advance").addEventListener("click", () => narrator.advance());
+$("narrator-close").addEventListener("click", () => narrator.hide());
+$("gravekeeper-btn").addEventListener("click", () => narrator.say(HELP_LINES[document.body.dataset.screen] ?? HELP_LINES.landing));
+
+try {
+  narrator.muted = localStorage.getItem("graveyard-muted") === "1";
+} catch {}
+$("narrator-sound").setAttribute("aria-pressed", String(!narrator.muted));
+$("narrator-sound").addEventListener("click", () => {
+  narrator.muted = !narrator.muted;
+  $("narrator-sound").setAttribute("aria-pressed", String(!narrator.muted));
+  try {
+    localStorage.setItem("graveyard-muted", narrator.muted ? "1" : "0");
+  } catch {}
+});
+
+// Audio needs a user gesture first.
+addEventListener("pointerdown", () => narrator.unlockAudio(), { once: true });
+addEventListener("keydown", () => narrator.unlockAudio(), { once: true });
+
+// Z advances the text box, like Undertale.
+addEventListener("keydown", (e) => {
+  if ((e.key === "z" || e.key === "Z") && !$("narrator").hidden && !$("slay-dialog").open) narrator.advance();
+});
+
+// Keep the page padded by the box's real height so it never hides content.
+new ResizeObserver(() => document.body.style.setProperty("--narrator-h", `${$("narrator").offsetHeight}px`)).observe($("narrator"));
+
+// Greet new visitors once the title screen has had its moment.
+setTimeout(() => {
+  if (document.body.dataset.screen === "landing" && $("narrator").hidden && !document.body.classList.contains("is-summoning")) {
+    narrator.say(["* Psst. Down here.", ...HELP_LINES.landing.slice(0, 2), "* Pick Summon demo graveyard to begin."]);
+  }
+}, 2500);
 
 $("demo-btn").addEventListener("click", () =>
   summon(async () => {
